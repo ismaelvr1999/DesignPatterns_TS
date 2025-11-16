@@ -18,25 +18,28 @@ class FileElement implements FileSystemElement {
 }
 
 class DirectoryElement implements FileSystemElement {
-    public children: File[] = [];
+    public children: FileElement[] = [];
     constructor(public name: string) { }
     accept(v: FileSystemVisitor): void {
         v.visitDirectory(this);
+
+        for ( const child of this.children){
+            v.visitFile(child);
+        }
     }
 }
 
 class SizeCalculatorVisitor implements FileSystemVisitor {
+    private totalSize = 0;
     visitFile(file: FileElement): void {
-        console.log(`file size: ${file.size}`);
+        this.totalSize += file.size;
     }
 
     visitDirectory(directory: DirectoryElement): void {
-        let total = 0;
+    }
 
-        for (let file of directory.children) {
-            total += file.size;
-        }
-        console.log(`directory size: ${total}`);
+    getTotalSize() {
+        return this.totalSize;
     }
 }
 
@@ -44,7 +47,7 @@ let file1 = new FileElement("file1.txt",60);
 let file2 = new FileElement("file2.txt",60);
 let directory = new DirectoryElement("foo");
 let sizeCalculatorVisitor = new SizeCalculatorVisitor();
-
+directory.children.push(file1,file2);
 directory.accept(sizeCalculatorVisitor);
-file1.accept(sizeCalculatorVisitor);
-file2.accept(sizeCalculatorVisitor);
+
+console.log(sizeCalculatorVisitor.getTotalSize());
